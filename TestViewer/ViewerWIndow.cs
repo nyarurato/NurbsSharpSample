@@ -64,7 +64,7 @@ public class ViewerWindow : GameWindow
     private void InitializeMeshData()
     {
         // Get tessellated mesh from NURBS surface
-        // THIS IS A SAMPLE DATA: See NurbsSample.cs for details
+        // !! THIS IS A SAMPLE DATA: See NurbsSample.cs for details !!
         var mesh = NurbsSample.GetTessellatedMesh(MESH_RESOLUTION_U, MESH_RESOLUTION_V);
         _indexCount = mesh.Indexes.Length;
 
@@ -90,6 +90,9 @@ public class ViewerWindow : GameWindow
         GL.EnableVertexAttribArray(0);
     }
 
+    /// <summary>
+    /// Converts an array of NurbsSharp.Core.Vector3Double to a flat float array for OpenGL.
+    /// </summary>
     private float[] ConvertVerticesToFloatArray(Vector3Double[] vertices)
     {
         float[] result = new float[vertices.Length * 3];
