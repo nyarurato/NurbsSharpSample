@@ -1,0 +1,190 @@
+﻿@page "/"
+@using SurfDemoBlazor.Services
+@using SurfDemoBlazor.Components
+@using NurbsSharp.Core
+@using NurbsSharp.Geometry
+@using NurbsSharp.Tesselation
+@inject ThreeJsInterop ThreeJs
+@implements IAsyncDisposable
+
+<PageTitle>NURBS Surface Demo Web</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <p>Three.js integration with NurbsSharp</p>
+            <div id="threejs-container" style="width: 100%; height: 600px; border: 1px solid #ccc;"></div>
+        </div>
+        <div class="col-md-4">
+            <ControlPointEditor ControlPoints="controlPoints" 
+                                OnControlPointsChanged="OnControlPointsChanged" />
+            
+            <div class="degree-panel">
+                <h4>NURBS Degree</h4>
+                <div class="panel-content">
+                    <div class="degree-row">
+                        <strong>U Direction:</strong>
+                        <span class="degree-value">@degreeU</span>
+                    </div>
+                    <div class="degree-row">
+                        <strong>V Direction:</strong>
+                        <span class="degree-value">@degreeV</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="knot-vector-panel">
+                <h4>Knot Vectors (Clamped)</h4>
+                <div class="panel-content">
+                    <div class="mb-3">
+                        <strong>U Direction:</strong>
+                        <div class="knot-values">
+                            @if (knotVectorU != null)
+                            {
+                                <code>[@string.Join(", ", knotVectorU.Knots.Select(k => k.ToString("F2")))]</code>
+                            }
+                        </div>
+                    </div>
+                    <div>
+                        <strong>V Direction:</strong>
+                        <div class="knot-values">
+                            @if (knotVectorV != null)
+                            {
+                                <code>[@string.Join(", ", knotVectorV.Knots.Select(k => k.ToString("F2")))]</code>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ControlPoint[][] controlPoints = new ControlPoint[5][];
+    private KnotVector? knotVectorU;
+    private KnotVector? knotVectorV;
+    private int degreeU = 3;
+    private int degreeV = 3;
+
+    protected override void OnInitialized()
+    {
+        InitializeControlPoints();
+    }
+
+    private void InitializeControlPoints()
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            controlPoints[i] = new ControlPoint[5];
+        }
+
+        controlPoints =
+            [
+                [
+                new ControlPoint(0.0, 0.0, 0.0, 1),
+                new ControlPoint(1.0, 0.0, 0.0, 1),
+                new ControlPoint(2.0, 0.0, 0.0, 1),
+                new ControlPoint(3.0, 0.0, 0.0, 1),
+                new ControlPoint(4.0, 0.0, 0.0, 1)
+                ],
+                [
+                new ControlPoint(0.0, 1.0, 0.5, 1),
+                new ControlPoint(1.0, 1.0, -1.5, 1),
+                new ControlPoint(2.0, 1.0, 4.0, 1),
+                new ControlPoint(3.0, 1.0, -3.0, 1),
+                new ControlPoint(4.0, 1.0, 0.5, 1)
+                ],
+                [
+                new ControlPoint(0.0, 2.0, 1.5, 1),
+                new ControlPoint(1.0, 2.0, 2.5, 1),
+                new ControlPoint(2.0, 2.0, 3.5, 0.7),
+                new ControlPoint(3.0, 2.0, 3.0, 1),
+                new ControlPoint(4.0, 2.0, 0.0, 1)
+                ],
+                [
+                new ControlPoint(0.0, 3.0, 0.5, 1),
+                new ControlPoint(1.5, 3.0, -1.5, 1),
+                new ControlPoint(2.5, 3.0, 2.0 ,1),
+                new ControlPoint(3.5, 3.0, -1.5, 1),
+                new ControlPoint(4.5, 3.0, -1.0, 1)
+                ],
+                [
+                new ControlPoint(0.0, 4.0, 0.5, 1),
+                new ControlPoint(1.0, 4.0, 0.5, 1),
+                new ControlPoint(2.0, 4.0, 0.0, 1),
+                new ControlPoint(3.0, 4.0, 0.0, 1),
+                new ControlPoint(4.0, 4.0, 0.0, 1) 
+                ],
+            ];
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ThreeJs.InitThreeJS("threejs-container");
+            // Display initial mesh and control points
+            await LoadSampleMesh();
+        }
+    }
+
+    private async Task OnControlPointsChanged()
+    {
+        await LoadSampleMesh();
+    }
+
+    private async Task LoadSampleMesh()
+    {
+        // Create a simple NURBS surface
+        degreeU = 3;
+        degreeV = 3;
+
+        knotVectorU = KnotVector.GetClampedKnot(degreeU, controlPoints.Length);
+        knotVectorV = KnotVector.GetClampedKnot(degreeV, controlPoints[0].Length);
+
+        var nurbsSurface = new NurbsSurface(degreeU, degreeV, knotVectorU, knotVectorV, controlPoints);
+        
+        // Tessellate the surface to create a mesh
+        var mesh = SurfaceTessellator.Tessellate(nurbsSurface, 20, 20);
+
+        // Convert NurbsSharp Mesh to our MeshData format
+        var vertices = new List<Point3D>();
+        foreach (var vertex in mesh.Vertices)
+        {
+            vertices.Add(new Point3D(vertex.X, vertex.Y, vertex.Z));
+        }
+
+        var faces = new List<Face>();
+        // Indexes are stored as consecutive triplets (i0, i1, i2, i3, i4, i5, ...)
+        // where each triplet (i0, i1, i2) represents one triangle face
+        for (int i = 0; i < mesh.Indexes.Length; i += 3)
+        {
+            faces.Add(new Face(mesh.Indexes[i], mesh.Indexes[i + 1], mesh.Indexes[i + 2]));
+        }
+
+        var meshData = new MeshData(vertices.ToArray(), faces.ToArray());
+        
+        await ThreeJs.DisplayMesh(meshData);
+
+        // Display control points
+        var points = new List<Point3D>();
+        foreach (var row in controlPoints)
+        {
+            foreach (var cp in row)
+            {
+                points.Add(new Point3D(cp.Position.X, cp.Position.Y, cp.Position.Z));
+            }
+        }
+        
+        await ThreeJs.DisplayPoints(points.ToArray());
+        
+        // Update UI to display knot vectors
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await ThreeJs.DisposeAsync();
+    }
+}

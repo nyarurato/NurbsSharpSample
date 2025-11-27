@@ -1,0 +1,72 @@
+.degree-panel {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #e8f4f8;
+}
+
+.degree-panel h4 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.degree-panel .panel-content {
+    font-size: 0.9rem;
+}
+
+.degree-panel .degree-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.degree-panel .degree-row:last-child {
+    border-bottom: none;
+}
+
+.degree-panel .degree-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #0066cc;
+    background-color: #ffffff;
+    padding: 4px 12px;
+    border-radius: 3px;
+    border: 1px solid #dee2e6;
+}
+
+.knot-vector-panel {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.knot-vector-panel h4 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.knot-vector-panel .panel-content {
+    font-size: 0.9rem;
+}
+
+.knot-vector-panel .knot-values {
+    margin-top: 5px;
+    padding: 8px;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    overflow-x: auto;
+}
+
+.knot-vector-panel code {
+    color: #0066cc;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}

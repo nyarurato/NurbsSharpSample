@@ -1,0 +1,152 @@
+@using NurbsSharp.Core
+
+<div class="control-point-editor">
+    <h4>Control Points Editor (@ControlPoints.Length x @(ControlPoints.Length > 0 ? ControlPoints[0].Length : 0))</h4>
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th>Index</th>
+                        <th>X</th>
+                        <th>Y</th>
+                        <th>Z</th>
+                        <th>Weight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int u = 0; u < ControlPoints.Length; u++)
+                    {
+                        @for (int v = 0; v < ControlPoints[u].Length; v++)
+                        {
+                            var localU = u;
+                            var localV = v;
+                            var point = ControlPoints[localU][localV];
+                        <tr>
+                            <td class="align-middle"><strong>U@(localU)V@(localV)</strong></td>
+                            <td>
+                                <input type="number" 
+                                       step="0.1" 
+                                       class="form-control form-control-sm" 
+                                       value="@point.Position.X"
+                                       @onchange="@(e => UpdateX(localU, localV, e))" />
+                            </td>
+                            <td>
+                                <input type="number" 
+                                       step="0.1" 
+                                       class="form-control form-control-sm" 
+                                       value="@point.Position.Y"
+                                       @onchange="@(e => UpdateY(localU, localV, e))" />
+                            </td>
+                            <td>
+                                <input type="number" 
+                                       step="0.1" 
+                                       class="form-control form-control-sm" 
+                                       value="@point.Position.Z"
+                                       @onchange="@(e => UpdateZ(localU, localV, e))" />
+                            </td>
+                            <td>
+                                <input type="number" 
+                                       step="0.1" 
+                                       min="0.1"
+                                       class="form-control form-control-sm" 
+                                       value="@point.Weight"
+                                       @onchange="@(e => UpdateWeight(localU, localV, e))" />
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="mt-2">
+        <button class="btn btn-secondary btn-sm" @onclick="ResetToDefault">Reset to Default</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ControlPoint[][] ControlPoints { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnControlPointsChanged { get; set; }
+
+    private async Task UpdateX(int u, int v, ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out double newX))
+        {
+            var cp = ControlPoints[u][v];
+            ControlPoints[u][v] = new ControlPoint(newX, cp.Position.Y, cp.Position.Z, cp.Weight);
+            await OnControlPointsChanged.InvokeAsync();
+        }
+    }
+
+    private async Task UpdateY(int u, int v, ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out double newY))
+        {
+            var cp = ControlPoints[u][v];
+            ControlPoints[u][v] = new ControlPoint(cp.Position.X, newY, cp.Position.Z, cp.Weight);
+            await OnControlPointsChanged.InvokeAsync();
+        }
+    }
+
+    private async Task UpdateZ(int u, int v, ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out double newZ))
+        {
+            var cp = ControlPoints[u][v];
+            ControlPoints[u][v] = new ControlPoint(cp.Position.X, cp.Position.Y, newZ, cp.Weight);
+            await OnControlPointsChanged.InvokeAsync();
+        }
+    }
+
+    private async Task UpdateWeight(int u, int v, ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out double newWeight) && newWeight > 0)
+        {
+            var cp = ControlPoints[u][v];
+            ControlPoints[u][v] = new ControlPoint(cp.Position.X, cp.Position.Y, cp.Position.Z, newWeight);
+            await OnControlPointsChanged.InvokeAsync();
+        }
+    }
+
+    private async Task ResetToDefault()
+    {
+        if (ControlPoints.Length >= 5 && ControlPoints[0].Length >= 5)
+        {
+            ControlPoints[0][0] = new ControlPoint(0.0, 0.0, 0.0, 1);
+            ControlPoints[0][1] = new ControlPoint(1.0, 0.0, 0.0, 1);
+            ControlPoints[0][2] = new ControlPoint(2.0, 0.0, 0.0, 1);
+            ControlPoints[0][3] = new ControlPoint(3.0, 0.0, 0.0, 1);
+            ControlPoints[0][4] = new ControlPoint(4.0, 0.0, 0.0, 1);
+
+            ControlPoints[1][0] = new ControlPoint(0.0, 1.0, 0.0, 1);
+            ControlPoints[1][1] = new ControlPoint(1.0, 1.0, 0.0, 1);
+            ControlPoints[1][2] = new ControlPoint(2.0, 1.0, 0.0, 1);
+            ControlPoints[1][3] = new ControlPoint(3.0, 1.0, 0.0, 1);
+            ControlPoints[1][4] = new ControlPoint(4.0, 1.0, 0.0, 1);
+
+            ControlPoints[2][0] = new ControlPoint(0.0, 2.0, 0.0, 1);
+            ControlPoints[2][1] = new ControlPoint(1.0, 2.0, 0.0, 1);
+            ControlPoints[2][2] = new ControlPoint(2.0, 2.0, 0.0, 1);
+            ControlPoints[2][3] = new ControlPoint(3.0, 2.0, 0.0, 1);
+            ControlPoints[2][4] = new ControlPoint(4.0, 2.0, 0.0, 1);
+
+            ControlPoints[3][0] = new ControlPoint(0.0, 3.0, 0.0, 1);
+            ControlPoints[3][1] = new ControlPoint(1.0, 3.0, 0.0, 1);
+            ControlPoints[3][2] = new ControlPoint(2.0, 3.0, 0.0, 1);
+            ControlPoints[3][3] = new ControlPoint(3.0, 3.0, 0.0, 1);
+            ControlPoints[3][4] = new ControlPoint(4.0, 3.0, 0.0, 1);
+
+            ControlPoints[4][0] = new ControlPoint(0.0, 4.0, 0.0, 1);
+            ControlPoints[4][1] = new ControlPoint(1.0, 4.0, 0.0, 1);
+            ControlPoints[4][2] = new ControlPoint(2.0, 4.0, 0.0, 1);
+            ControlPoints[4][3] = new ControlPoint(3.0, 4.0, 0.0, 1);
+            ControlPoints[4][4] = new ControlPoint(4.0, 4.0, 0.0, 1);
+
+            await OnControlPointsChanged.InvokeAsync();
+        }
+    }
+}

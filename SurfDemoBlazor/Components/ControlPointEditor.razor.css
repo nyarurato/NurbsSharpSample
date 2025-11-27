@@ -1,0 +1,35 @@
+.control-point-editor {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.control-point-editor .table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.control-point-editor input[type="number"] {
+    width: 80px;
+    font-size: 0.875rem;
+}
+
+.control-point-editor table {
+    font-size: 0.875rem;
+}
+
+.control-point-editor th {
+    background-color: #e9ecef;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.control-point-editor td {
+    text-align: center;
+    vertical-align: middle;
+}
